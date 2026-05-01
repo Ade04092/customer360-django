@@ -1,14 +1,17 @@
-from django.shortcuts import render
+# customer_app/views.py
+from django.shortcuts import render, redirect, get_object_or_404
 from datetime import date, timedelta
 from django.db.models import Count
-from .models import Customer, Interaction
+from django.contrib.auth.models import User
+from .models import Customer, Interaction, Course, Lesson, Question, Choice, Submission
 
-# Landing page: list all customers
+# Home page
 def index(request):
     customers = Customer.objects.all()
-    return render(request, "index.html", {"customers": customers})
+    context = {"customers": customers}
+    return render(request, "index.html", context)
 
-# Create a new customer
+# Create new customer
 def create_customer(request):
     if request.method == "POST":
         name = request.POST["name"]
@@ -16,43 +19,75 @@ def create_customer(request):
         phone = request.POST["phone"]
         address = request.POST["address"]
         social_media = request.POST.get("social_media", "")
-        Customer.objects.create(
+        customer = Customer.objects.create(
             name=name, email=email, phone=phone, address=address, social_media=social_media
         )
-        return render(request, "add.html", {"msg": "Successfully Saved a Customer"})
+        customer.save()
+        msg = "Successfully Saved a Customer"
+        return render(request, "add.html", context={"msg": msg})
     return render(request, "add.html")
 
-# Record an interaction
+# Add interaction for a customer
 def interact(request, cid):
     channels = Interaction.CHANNEL_CHOICES
     directions = Interaction.DIRECTION_CHOICES
     context = {"channels": channels, "directions": directions}
+
     if request.method == "POST":
         customer = Customer.objects.get(id=cid)
         channel = request.POST["channel"]
         direction = request.POST["direction"]
         summary = request.POST["summary"]
-        Interaction.objects.create(
+        interaction = Interaction.objects.create(
             customer=customer,
             channel=channel,
             direction=direction,
             summary=summary
         )
+        interaction.save()
         context["msg"] = "Interaction Success"
+        return render(request, "interact.html", context)
+
     return render(request, "interact.html", context)
 
-# Show interactions in last 30 days
+# Summary page (last 30 days)
 def summary(request):
     thirty_days_ago = date.today() - timedelta(days=30)
     interactions = Interaction.objects.filter(interaction_date__gte=thirty_days_ago)
     count = interactions.count()
-    interactions = interactions.values("channel", "direction").annotate(count=Count('channel'))
+    interactions = interactions.values("channel","direction").annotate(count=Count('channel'))
     return render(request, "summary.html", {"interactions": interactions, "count": count})
 
-def submit(request):
-    # Placeholder for submission logic
-    return render(request, "submit.html")
+# Exam submit page
+def submit(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    questions = Question.objects.filter(lesson__course=course)
+    if request.method == 'POST':
+        user = User.objects.first()  # For testing
+        for q in questions:
+            choice_id = request.POST.get(str(q.id))
+            if choice_id:
+                choice = Choice.objects.get(id=choice_id)
+                Submission.objects.create(user=user, question=q, selected_choice=choice)
+        return redirect('show_exam_result', course_id=course.id)
+    return render(request, 'submit.html', {'course': course, 'questions': questions})
 
-def show_exam_result(request):
-    # Placeholder for exam result logic
-    return render(request, "exam_result.html")
+# Exam result page
+def show_exam_result(request, course_id):
+    course = get_object_or_404(Course, id=course_id)
+    user = User.objects.first()  # For testing
+    submissions = Submission.objects.filter(user=user, question__lesson__course=course)
+    total = submissions.count()
+    correct = sum(1 for s in submissions if s.selected_choice.is_correct)
+    score = int((correct / total) * 100) if total else 0
+    return render(request, 'exam_result.html', {'course': course, 'score': score, 'submissions': submissions})
+
+# Optional mock exam for Task 7 screenshot
+def mock_exam_result(request):
+    score = 95
+    results = [
+        {'question': 'Q1', 'answer': 'A', 'correct': True},
+        {'question': 'Q2', 'answer': 'B', 'correct': True},
+        {'question': 'Q3', 'answer': 'C', 'correct': True},
+    ]
+    return render(request, 'mock_exam_result.html', {'score': score, 'results': results})

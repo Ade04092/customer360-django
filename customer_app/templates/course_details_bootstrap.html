@@ -1,0 +1,17 @@
+<!-- onlinecourse/templates/course_details_bootstrap.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h1 class="text-primary">{{ course.name }}</h1>
+  <p>{{ course.description }}</p>
+
+  <h2>Lessons</h2>
+  <ul class="list-group">
+    {% for lesson in course.lessons.all %}
+      <li class="list-group-item">{{ lesson.title }}</li>
+    {% empty %}
+      <li class="list-group-item">No lessons available</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
