@@ -73,14 +73,22 @@ def submit(request, course_id):
     return render(request, 'submit.html', {'course': course, 'questions': questions})
 
 # Exam result page
-def show_exam_result(request, course_id):
-    course = get_object_or_404(Course, id=course_id)
-    user = User.objects.first()  # For testing
-    submissions = Submission.objects.filter(user=user, question__lesson__course=course)
-    total = submissions.count()
-    correct = sum(1 for s in submissions if s.selected_choice.is_correct)
-    score = int((correct / total) * 100) if total else 0
-    return render(request, 'exam_result.html', {'course': course, 'score': score, 'submissions': submissions})
+def show_exam_result(request, course_id, submission_id):
+    from django.shortcuts import get_object_or_404, render
+    from .models import Enrollment, Submission
+
+    enrollment = get_object_or_404(Enrollment, id=course_id)  # or by user/course
+    submission = get_object_or_404(Submission, id=submission_id)
+    correct, total = submission.is_get_score()
+    grade = int((correct / total) * 100) if total else 0
+    selected_ids = submission.choices.values_list('id', flat=True)
+
+    return render(request, 'exam_result_bootstrap.html', {
+        'course': enrollment.course,
+        'selected_ids': selected_ids,
+        'grade': grade,
+        'possible': total,
+    })
 
 # Optional mock exam for Task 7 screenshot
 def mock_exam_result(request):

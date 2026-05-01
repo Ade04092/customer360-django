@@ -102,4 +102,4 @@ class Submission(models.Model):
         return correct, total
 
     def __str__(self):
-        return f"Submission by {self.enrollment.learner.name} for {self.enrollment.course.name}"
+        return f"Submission {self.id} for enrollment {self.enrollment.id}"
