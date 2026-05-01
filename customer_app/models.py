@@ -81,13 +81,25 @@ class Learner(models.Model):
     def __str__(self):
         return self.name
 
+class Enrollment(models.Model):
+    learner = models.ForeignKey(Learner, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    date_enrolled = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.learner.name} - {self.course.name}"
+
 # ---------------------------
 # Submission must come LAST
 # ---------------------------
 class Submission(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    selected_choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
+    choices = models.ManyToManyField(Choice)
+
+    def is_get_score(self):
+        total = self.choices.count()
+        correct = sum(1 for c in self.choices.all() if c.is_correct)
+        return correct, total
 
     def __str__(self):
-        return f"{self.user.username} - {self.question.text}"
+        return f"Submission by {self.enrollment.learner.name} for {self.enrollment.course.name}"
