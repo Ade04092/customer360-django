@@ -35,7 +35,7 @@ class Interaction(models.Model):
         return f"{self.customer.name} - {self.channel} - {self.direction}"
 
 # ---------------------------
-# Exam models
+# Exam models (define BEFORE Submission)
 # ---------------------------
 class Course(models.Model):
     name = models.CharField(max_length=200)
@@ -67,6 +67,23 @@ class Choice(models.Model):
     def __str__(self):
         return self.text
 
+class Instructor(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.name
+
+class Learner(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+
+    def __str__(self):
+        return self.name
+
+# ---------------------------
+# Submission must come LAST
+# ---------------------------
 class Submission(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
