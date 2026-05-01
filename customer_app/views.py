@@ -48,3 +48,11 @@ def summary(request):
     count = interactions.count()
     interactions = interactions.values("channel", "direction").annotate(count=Count('channel'))
     return render(request, "summary.html", {"interactions": interactions, "count": count})
+
+def submit(request):
+    # Placeholder for submission logic
+    return render(request, "submit.html")
+
+def show_exam_result(request):
+    # Placeholder for exam result logic
+    return render(request, "exam_result.html")
