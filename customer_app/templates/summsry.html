@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Interactions in Last 30 Days</h1>
+{% if not interactions %}
+<p>No interactions in the last 30 days.</p>
+{% else %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Channel</th>
+            <th>Direction</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in interactions %}
+        <tr>
+            <td>{{ i.channel }}</td>
+            <td>{{ i.direction }}</td>
+            <td>{{ i.count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<h4>Total: {{ count }}</h4>
+{% endif %}
+{% endblock %}

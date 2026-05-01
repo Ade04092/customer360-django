@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Interact With Customer</h1>
+<form method="post" class="form">
+    {% csrf_token %}
+    <div class="form-group">
+        <label>Channel</label>
+        <select name="channel">
+            {% for c in channels %}
+            <option value="{{ c.0 }}">{{ c.1 }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Direction</label>
+        <select name="direction">
+            {% for d in directions %}
+            <option value="{{ d.0 }}">{{ d.1 }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Summary</label>
+        <textarea name="summary"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Save Interaction</button>
+    <p>{{ msg }}</p>
+</form>
+{% endblock %}
